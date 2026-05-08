@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>유노이아 중등 그림보카</title>
+<style>
+:root{
+  --pink:#ff6b9d;--purple:#a855f7;--plite:#f3e8ff;
+  --green:#10b981;--red:#ef4444;
+  --bg:#fff0f7;--text:#1e1b2e;--muted:#9ca3af;--border:#f0d0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);min-height:100vh;padding:13px 11px 50px;
+  background-image:radial-gradient(circle at 20% 15%,#fce7f3 0%,transparent 45%),
+    radial-gradient(circle at 80% 85%,#ede9fe 0%,transparent 45%);}
+.app-name{text-align:center;font-size:10px;font-weight:700;color:var(--purple);letter-spacing:2px;margin-bottom:3px;}
+.badge-wrap{text-align:center;margin-bottom:4px;}
+.badge-wrap span{display:inline-block;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:10px;font-weight:700;padding:2px 11px;border-radius:20px;letter-spacing:1px;}
+h1{text-align:center;font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px;}
+h1 em{color:var(--pink);font-style:normal;}
+.subtitle{text-align:center;font-size:10px;color:var(--muted);margin-bottom:10px;}
+.name-row{display:flex;justify-content:center;margin-bottom:11px;}
+.nf{display:flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:6px 12px;}
+.nf label{font-weight:700;color:var(--pink);font-size:12px;}
+.nf input{border:none;outline:none;font-family:inherit;font-size:12px;width:95px;color:var(--text);background:transparent;}
+.part-sw{display:flex;margin-bottom:11px;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#fff;}
+.pb{flex:1;padding:8px 5px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:none;background:#fff;color:var(--muted);transition:all .15s;line-height:1.4;}
+.pb.active{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;}
+.pb small{display:block;font-size:9px;font-weight:400;opacity:.8;margin-top:1px;}
+
+/* STEPPER */
+.stepper{display:flex;align-items:center;margin-bottom:12px;}
+.si{flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+.si.locked{cursor:default;opacity:.45;}
+.sc{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;}
+.si.active .sc{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(255,107,157,.35);}
+.si.done .sc{background:var(--green);color:#fff;border-color:var(--green);}
+.sl{font-size:9px;font-weight:700;color:var(--muted);margin-top:3px;text-align:center;white-space:nowrap;}
+.si.active .sl{color:var(--pink);}
+.si.done .sl{color:var(--green);}
+.sline{flex:none;width:14px;height:2px;background:var(--border);margin-bottom:16px;transition:background .3s;}
+.sline.done{background:var(--green);}
+
+.panel{display:none;}.panel.active{display:block;}
+.card{background:#fff;border-radius:14px;border:1.5px solid var(--border);padding:12px;margin-bottom:11px;box-shadow:0 2px 10px rgba(168,85,247,.05);}
+.stitle{font-size:10px;font-weight:700;color:var(--purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+
+/* STEP 0 WORD LISTEN */
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px;}
+.witem{background:var(--plite);border-radius:10px;padding:9px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.witem:hover{border-color:var(--purple);}
+.witem.heard{border-color:var(--green);background:#d1fae5;}
+.witem.playing{border-color:var(--pink);background:#fce7f3;}
+.wen{font-size:13px;font-weight:700;color:var(--purple);}
+.wko{font-size:10px;color:var(--muted);margin-top:1px;}
+.witem.heard .wen,.witem.heard .wko{color:var(--green);}
+.hear-ct{text-align:center;margin:9px 0 6px;font-size:12px;color:var(--muted);}
+.hear-ct strong{color:var(--purple);}
+
+/* STEP 1 MATCH */
+.round-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rbadge{font-size:11px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--pink),var(--purple));padding:3px 10px;border-radius:20px;}
+.mhint{font-size:10px;color:var(--muted);}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px;}
+.mcol{display:flex;flex-direction:column;gap:5px;}
+.mc{padding:9px 7px;border-radius:10px;border:2px solid var(--border);background:#fff;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;min-height:42px;display:flex;align-items:center;justify-content:center;line-height:1.3;word-break:keep-all;}
+.mc:hover{border-color:var(--purple);background:var(--plite);}
+.mc.sel{border-color:var(--pink);background:#fce7f3;color:var(--pink);transform:scale(1.03);}
+.mc.ok{border-color:var(--green);background:#d1fae5;color:var(--green);pointer-events:none;}
+.mc.ng{animation:shake .4s;}
+.mc.eng{color:var(--purple);}
+.mc.kor{color:var(--text);font-size:11px;font-weight:600;}
+.reset-notice{text-align:center;font-size:12px;font-weight:700;color:var(--red);padding:8px 10px;background:#fee2e2;border-radius:10px;margin-bottom:8px;display:none;}
+.mdone{text-align:center;padding:12px 0;display:none;}
+
+/* STEP 2 FILL */
+.wbank{display:flex;flex-wrap:wrap;gap:6px;}
+.wtag{background:var(--plite);color:var(--purple);font-size:12px;font-weight:700;padding:5px 10px;border-radius:20px;cursor:pointer;border:2px solid transparent;transition:all .15s;user-select:none;}
+.wtag:hover{border-color:var(--purple);}
+.wtag.sel{background:var(--pink);color:#fff;border-color:var(--pink);transform:scale(1.04);}
+.wtag.used{opacity:.3;text-decoration:line-through;pointer-events:none;}
+.sline2{font-size:14px;line-height:2.7;color:var(--text);margin-bottom:2px;}
+.blank{display:inline-block;min-width:80px;border-bottom:2.5px solid var(--purple);margin:0 2px;padding:2px 5px;font-size:13px;font-weight:700;text-align:center;color:var(--purple);cursor:pointer;vertical-align:bottom;border-radius:4px 4px 0 0;transition:all .15s;}
+.blank:hover{background:var(--plite);}
+.blank.act{background:#fce7f3;border-color:var(--pink);}
+.blank.ok{color:var(--green);border-color:var(--green);background:#d1fae5;}
+.blank.ng{color:var(--red);border-color:var(--red);background:#fee2e2;animation:shake .35s;}
+.fstatus{text-align:center;font-size:11px;color:var(--muted);margin:6px 0;}
+.fstatus strong{color:var(--purple);}
+.brow{display:flex;gap:7px;margin-bottom:10px;}
+.btn{flex:1;padding:10px 7px;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.btn-p{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 3px 9px rgba(255,107,157,.25);}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.btn-r{background:#fff;color:var(--text);border-color:var(--border);}
+.scorebox{display:none;background:#fff;border-radius:14px;border:1.5px solid var(--border);padding:13px;text-align:center;margin-bottom:10px;animation:popIn .3s cubic-bezier(.17,.67,.35,1.2);}
+.scorebox.show{display:block;}
+.scorenum{font-size:36px;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.scorestars{font-size:20px;margin:3px 0;}
+.scoremsg{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.unlock-box{display:none;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-radius:12px;padding:12px;text-align:center;font-size:13px;font-weight:700;margin-bottom:10px;}
+.unlock-box.show{display:block;}
+
+/* STEP 3 STORY */
+.spd-row{display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:11px;color:var(--muted);flex-wrap:wrap;}
+.spd{padding:3px 9px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:10px;font-weight:700;cursor:pointer;color:var(--muted);}
+.spd.on{background:var(--purple);color:#fff;border-color:var(--purple);}
+.lstory{font-size:14px;line-height:2.5;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px;}
+.lstory .hl{color:var(--purple);font-weight:700;}
+.bbtns{display:flex;gap:7px;}
+.bb{flex:1;padding:11px 7px;border-radius:12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+.bb-play{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;}
+.bb-stop{background:#fee2e2;color:var(--red);}
+
+/* RESULT */
+.res-card{display:none;background:#fff;border-radius:16px;border:3px solid var(--purple);padding:18px 14px;margin-top:12px;margin-bottom:16px;}
+.res-card.show{display:block;}
+.rlogo{text-align:center;margin-bottom:11px;padding-bottom:10px;border-bottom:2px solid var(--plite);}
+.rlogo p{font-size:9px;letter-spacing:2px;color:var(--purple);font-weight:700;margin-bottom:2px;}
+.rlogo h2{font-size:15px;font-weight:800;color:var(--text);}
+.rrow{display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;color:var(--muted);}
+.rrow strong{color:var(--text);}
+.rscores{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:11px;}
+.rsi{background:var(--plite);border-radius:10px;padding:9px 6px;text-align:center;}
+.rl{font-size:9px;color:var(--muted);margin-bottom:2px;}
+.rn{font-size:19px;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.rtot{background:linear-gradient(135deg,var(--pink),var(--purple));border-radius:10px;padding:9px 6px;text-align:center;}
+.rtot .rl{color:rgba(255,255,255,.8);}
+.rtot .rn{color:#fff;-webkit-text-fill-color:#fff;}
+.wlist{margin-top:10px;padding-top:10px;border-top:1px solid var(--plite);}
+.wlist p{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;}
+.wi{display:inline-block;background:#fee2e2;color:var(--red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin:2px;}
+.rfooter{text-align:center;margin-top:11px;font-size:9px;color:var(--muted);padding-top:8px;border-top:1px solid var(--plite);}
+
+.nextbtn{display:inline-block;padding:9px 22px;border-radius:20px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-family:inherit;font-size:12px;font-weight:700;border:none;cursor:pointer;margin-top:6px;}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes popIn{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+
+<p class="app-name">유노이아 중등 그림보카</p>
+<div class="badge-wrap"><span>DAY 02 · VOCA GAME</span></div>
+<h1>The Game Challenge <em>🎮</em></h1>
+<p class="subtitle">단어듣기 → 매치게임 → 빈칸채우기 → 스토리듣기</p>
+
+<div class="name-row">
+  <div class="nf"><label>이름</label><input type="text" id="nameInput" placeholder="홍길동"></div>
+</div>
+
+<div class="part-sw">
+  <button class="pb active" id="pb1" onclick="switchPart(1)">PART 1 · 1~3줄<small id="ps1">빈칸 — / 12</small></button>
+  <button class="pb" id="pb2" onclick="switchPart(2)">PART 2 · 4~8줄<small id="ps2">빈칸 — / 12</small></button>
+</div>
+
+<!-- STEPPER -->
+<div class="stepper">
+  <div class="si active" id="si0" onclick="tryStep(0)"><div class="sc">👂</div><div class="sl">단어듣기</div></div>
+  <div class="sline" id="sl0"></div>
+  <div class="si locked" id="si1" onclick="tryStep(1)"><div class="sc">🎮</div><div class="sl">매치게임</div></div>
+  <div class="sline" id="sl1"></div>
+  <div class="si locked" id="si2" onclick="tryStep(2)"><div class="sc">✏️</div><div class="sl">빈칸채우기</div></div>
+  <div class="sline" id="sl2"></div>
+  <div class="si locked" id="si3" onclick="tryStep(3)"><div class="sc">🔊</div><div class="sl">스토리듣기</div></div>
+</div>
+
+<!-- STEP 0 -->
+<div class="panel active" id="p0">
+  <div class="card">
+    <div class="stitle">📖 단어 하나씩 듣기 — 모든 단어를 눌러보세요!</div>
+    <div class="wgrid" id="wordGrid"></div>
+    <div class="hear-ct" id="hearCt">들은 단어: <strong>0 / 12</strong></div>
+    <div style="text-align:center">
+      <button class="nextbtn" id="toMatchBtn" onclick="goStep(1)" style="opacity:.4;pointer-events:none">매치게임 시작 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div class="panel" id="p1">
+  <div class="card">
+    <div class="round-row">
+      <span class="rbadge" id="rbadge">Round 1</span>
+      <span class="mhint" id="mhint">0 / 6 매치</span>
+    </div>
+    <div class="reset-notice" id="resetNotice">❌ 틀렸어요! 처음부터 다시!</div>
+    <div class="mgrid" id="mgrid">
+      <div class="mcol" id="colEng"></div>
+      <div class="mcol" id="colKor"></div>
+    </div>
+    <div class="mdone" id="mdone">
+      <div style="font-size:30px;margin-bottom:5px">🎉</div>
+      <p id="mdoneMsg" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px"></p>
+      <button class="nextbtn" id="mnextBtn" onclick="matchNext()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="panel" id="p2">
+  <div class="card">
+    <div class="stitle">📦 Word Bank</div>
+    <div class="wbank" id="wordBank"></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;flex-wrap:wrap;gap:4px;">
+      <div class="stitle" style="margin-bottom:0">✏️ 빈칸 채우기</div>
+      <button onclick="speakStory()" style="display:flex;align-items:center;gap:3px;padding:5px 11px;border-radius:20px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;">🔊 스토리 듣기</button>
+    </div>
+    <div id="story"></div>
+    <div class="fstatus" id="fstatus">채운 빈칸: <strong>0 / 12</strong></div>
+  </div>
+  <div class="brow">
+    <button class="btn btn-p" id="checkBtn" onclick="checkAll()" disabled>🎯 채점하기</button>
+    <button class="btn btn-r" onclick="resetFill()">🔄 다시</button>
+  </div>
+  <div class="scorebox" id="scorebox">
+    <div class="scorestars" id="sstars"></div>
+    <div class="scorenum" id="snum"></div>
+    <div class="scoremsg" id="smsg"></div>
+    <div id="snext" style="margin-top:7px"></div>
+  </div>
+  <div class="unlock-box" id="unlockBox">
+    🎉 모든 빈칸 완료! 스토리 듣기가 열렸어요!<br>
+    <button class="nextbtn" onclick="goStep(3)" style="margin-top:8px">스토리 듣기 →</button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="panel" id="p3">
+  <div class="card">
+    <div class="stitle">🔊 스토리 듣기</div>
+    <div class="spd-row">
+      속도:
+      <button class="spd on" id="sp0" onclick="setSpd(0.75)">🐢 느리게</button>
+      <button class="spd" id="sp1" onclick="setSpd(1.0)">🚶 보통</button>
+      <button class="spd" id="sp2" onclick="setSpd(1.3)">🚀 빠르게</button>
+    </div>
+    <div class="lstory" id="lstory"></div>
+    <div class="bbtns">
+      <button class="bb bb-play" onclick="speakStory()">▶ 전체 읽기</button>
+      <button class="bb bb-stop" onclick="stopSpeech()">■ 멈추기</button>
+    </div>
+  </div>
+  <div style="text-align:center;margin-bottom:11px">
+    <button class="nextbtn" onclick="toggleResult()">📸 결과 카드 보기</button>
+    <p id="captureMsg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;color:var(--pink);">📲 캡처해서 선생님께 보내세요!</p>
+  </div>
+  <div class="res-card" id="resCard">
+    <div class="rlogo"><p>유노이아 중등 그림보카</p><h2>학습 결과 카드</h2></div>
+    <div class="rrow"><div>이름 &nbsp;<strong id="rName">—</strong></div><div>날짜 &nbsp;<strong id="rDate">—</strong></div></div>
+    <div class="rscores">
+      <div class="rsi"><div class="rl">PART 1</div><div class="rn" id="rP1">—</div></div>
+      <div class="rsi"><div class="rl">PART 2</div><div class="rn" id="rP2">—</div></div>
+      <div class="rtot"><div class="rl">TOTAL</div><div class="rn" id="rTotal">—</div></div>
+    </div>
+    <div class="wlist" id="wlist"></div>
+    <div class="rfooter">DAY 02 · The Game Challenge &nbsp;|&nbsp; 유노이아 중등 그림보카</div>
+  </div>
+</div>
+
+<script>
+const allData=[
+  {w:"unknown",     k:"미지[무명]의",                        p:1},
+  {w:"independent", k:"독립의, 별개의",                      p:1},
+  {w:"unlike",      k:"~와 달리",                            p:1},
+  {w:"uncomfortable",k:"불편한",                             p:1},
+  {w:"unfortunately",k:"불행하게도",                         p:1},
+  {w:"unlock",      k:"자물쇠를 열다; 털어놓다",             p:1},
+  {w:"contrary",    k:"반대의/반대",                         p:1},
+  {w:"dislike",     k:"싫어하다/싫어함",                     p:1},
+  {w:"illegal",     k:"불법의",                              p:1},
+  {w:"irresistible",k:"저항할 수 없는",                      p:1},
+  {w:"discover",    k:"발견하다",                            p:1},
+  {w:"uneasy",      k:"불안한, 불편한",                      p:1},
+  {w:"impossible",  k:"불가능한",                            p:2},
+  {w:"dismiss",     k:"해고하다, 묵살하다",                  p:2},
+  {w:"disappear",   k:"사라지다",                            p:2},
+  {w:"discourage",  k:"낙담시키다",                          p:2},
+  {w:"disagree",    k:"동의하지 않다, 다르다",               p:2},
+  {w:"unnecessary", k:"불필요한",                            p:2},
+  {w:"disorder",    k:"무질서; 장애, 질환",                  p:2},
+  {w:"contradict",  k:"반박하다, 모순되다",                  p:2},
+  {w:"contrast",    k:"대조를 이루다/대조, 대비",            p:2},
+  {w:"dispose",     k:"버리다, 폐기하다, 배치하다",          p:2},
+  {w:"controversy", k:"논쟁",                                p:2},
+  {w:"unusual",     k:"보통이 아닌, 별난",                   p:2},
+];
+
+const sentences=[
+  `Juhyeon and Hyunwoo found an [0] game on a new app and decided to play as [1] characters — [2] their friends, they loved a real challenge.`,
+  `The controls were [3] at first, and [4] they failed to [5] the secret dungeon on their first try.`,
+  `On the [6], they didn't give up — even though Juhyeon began to [7] the [8]-looking shortcuts, the [9] gameplay helped them [10] new skills, though both felt [11] about the final boss.`,
+  `Reaching the final level seemed [12], and Hyunwoo wanted to [13] the whole strategy.`,
+  `The boss would [14] without warning, as if trying to [15] the players from going on.`,
+  `The two began to [16] loudly — Hyunwoo insisted the power-up was [17], while Juhyeon strongly disagreed.`,
+  `Their room fell into [18], and Hyunwoo kept trying to [19] Juhyeon's plan, creating a funny [20] between their playing styles.`,
+  `In the end, they chose to [21] old strategies, resolved the [22] with a fist bump, and pulled off an [23] move that ended the game in victory. 🎮`
+];
+
+const partSents={1:[0,1,2],2:[3,4,5,6,7]};
+const partRange={1:[0,11],2:[12,23]};
+const answers=allData.map(d=>d.w);
+
+let curPart=1,curStep=0;
+let unlocked=[true,false,false,false];
+let filled=new Array(24).fill(null);
+let selWord=null,rate=0.75;
+let partScores={1:null,2:null};
+let heardSet=new Set();
+let mRound=1,selE=null,selK=null,mSet=new Set();
+let eOrd=[],kOrd=[];
+let curWords=[];
+let hasChecked=false;
+
+function sh(a){return[...a].sort(()=>Math.random()-.5);}
+
+// SPEECH
+function speak(t,r,cb){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang='en-US';u.rate=r||rate;u.pitch=1;
+  if(cb)u.onend=cb;
+  window.speechSynthesis.speak(u);
+}
+function stopSpeech(){window.speechSynthesis&&window.speechSynthesis.cancel();}
+function setSpd(r){
+  rate=r;
+  ['sp0','sp1','sp2'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById(r===0.75?'sp0':r===1.0?'sp1':'sp2').classList.add('on');
+}
+function speakStory(){
+  const t=partSents[curPart].map(si=>sentences[si].replace(/\[(\d+)\]/g,(_,i)=>answers[+i])).join(' ');
+  speak(t,rate);
+}
+
+// STEPPER
+function refreshStepper(){
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('si'+i);
+    el.classList.remove('active','done','locked');
+    if(i===curStep) el.classList.add('active');
+    else if(unlocked[i]) el.classList.add('done');
+    else el.classList.add('locked');
+    if(i<3) document.getElementById('sl'+i).classList.toggle('done',unlocked[i+1]);
+  }
+}
+function tryStep(s){
+  if(!unlocked[s]&&s!==0)return;
+  goStep(s);
+}
+function goStep(s){
+  stopSpeech();curStep=s;
+  for(let i=0;i<4;i++) document.getElementById('p'+i).classList.toggle('active',i===s);
+  refreshStepper();
+  document.getElementById('scorebox').classList.remove('show');
+  document.getElementById('unlockBox').classList.remove('show');
+  if(s===0) renderWordGrid();
+  if(s===1){mRound=1;mSet.clear();selE=null;selK=null;renderMatch();}
+  if(s===2){curWords=[];renderBank();renderStory();updateFStatus();}
+  if(s===3) renderLStory();
+}
+function doUnlock(s){
+  unlocked[s]=true;refreshStepper();
+}
+
+// PART SWITCH
+function switchPart(p){
+  curPart=p;stopSpeech();selWord=null;
+  document.getElementById('pb1').classList.toggle('active',p===1);
+  document.getElementById('pb2').classList.toggle('active',p===2);
+  heardSet.clear();mRound=1;mSet.clear();selE=null;selK=null;
+  unlocked=[true,false,false,false];curWords=[];hasChecked=false;
+  document.getElementById('scorebox').classList.remove('show');
+  document.getElementById('unlockBox').classList.remove('show');
+  goStep(0);
+}
+
+// STEP 0: WORD LISTEN
+function renderWordGrid(){
+  const [lo,hi]=partRange[curPart];
+  const g=document.getElementById('wordGrid');g.innerHTML='';
+  for(let i=lo;i<=hi;i++){
+    const d=allData[i],isH=heardSet.has(i);
+    const el=document.createElement('div');
+    el.className='witem'+(isH?' heard':'');
+    el.innerHTML=`<div><div class="wen">${d.w}</div><div class="wko">${d.k}</div></div><span style="font-size:16px">${isH?'✅':'🔊'}</span>`;
+    el.onclick=()=>{
+      document.querySelectorAll('.witem').forEach(e=>e.classList.remove('playing'));
+      el.classList.add('playing');
+      speak(d.w,.85,()=>{
+        el.classList.remove('playing');
+        heardSet.add(i);
+        el.className='witem heard';
+        el.innerHTML=`<div><div class="wen" style="color:var(--green)">${d.w}</div><div class="wko" style="color:var(--green)">${d.k}</div></div><span style="font-size:16px">✅</span>`;
+        updateHearCt();
+      });
+    };
+    g.appendChild(el);
+  }
+  updateHearCt();
+}
+function updateHearCt(){
+  const [lo,hi]=partRange[curPart];
+  const cnt=Array.from(heardSet).filter(i=>i>=lo&&i<=hi).length,tot=hi-lo+1;
+  document.getElementById('hearCt').innerHTML=`들은 단어: <strong>${cnt} / ${tot}</strong>`;
+  const all=cnt>=tot;
+  const btn=document.getElementById('toMatchBtn');
+  btn.style.opacity=all?'1':'0.4';btn.style.pointerEvents=all?'auto':'none';
+  if(all&&!unlocked[1]) doUnlock(1);
+}
+
+// STEP 1: MATCH
+function getRR(){const[lo]=partRange[curPart];return mRound===1?[lo,lo+5]:[lo+6,lo+11];}
+function renderMatch(){
+  const[rlo,rhi]=getRR();
+  const ids=[];for(let i=rlo;i<=rhi;i++)ids.push(i);
+  eOrd=sh(ids);kOrd=sh(ids);
+  mSet.clear();selE=null;selK=null;
+  document.getElementById('rbadge').textContent=`Round ${mRound}`;
+  document.getElementById('mhint').textContent='0 / 6 매치';
+  document.getElementById('resetNotice').style.display='none';
+  document.getElementById('mdone').style.display='none';
+  document.getElementById('mgrid').style.display='grid';
+  const cE=document.getElementById('colEng'),cK=document.getElementById('colKor');
+  cE.innerHTML='';cK.innerHTML='';
+  eOrd.forEach(idx=>{
+    const c=document.createElement('div');
+    c.className='mc eng';c.textContent=allData[idx].w;c.dataset.idx=idx;
+    c.onclick=()=>pickE(idx);cE.appendChild(c);
+  });
+  kOrd.forEach(idx=>{
+    const c=document.createElement('div');
+    c.className='mc kor';c.textContent=allData[idx].k;c.dataset.idx=idx;
+    c.onclick=()=>pickK(idx);cK.appendChild(c);
+  });
+}
+function pickE(idx){
+  if(mSet.has(idx))return;
+  document.querySelectorAll('.mc.eng').forEach(c=>c.classList.remove('sel'));
+  selE=(selE===idx)?null:idx;
+  if(selE!==null) document.querySelector(`.mc.eng[data-idx="${idx}"]`).classList.add('sel');
+  if(selE!==null&&selK!==null) checkPair();
+}
+function pickK(idx){
+  if(mSet.has(idx))return;
+  document.querySelectorAll('.mc.kor').forEach(c=>c.classList.remove('sel'));
+  selK=(selK===idx)?null:idx;
+  if(selK!==null) document.querySelector(`.mc.kor[data-idx="${idx}"]`).classList.add('sel');
+  if(selE!==null&&selK!==null) checkPair();
+}
+function checkPair(){
+  const ei=selE,ki=selK;
+  const eEl=document.querySelector(`.mc.eng[data-idx="${ei}"]`);
+  const kEl=document.querySelector(`.mc.kor[data-idx="${ki}"]`);
+  selE=null;selK=null;
+  if(ei===ki){
+    mSet.add(ei);
+    [eEl,kEl].forEach(el=>{el.classList.remove('sel');el.classList.add('ok');});
+    document.getElementById('mhint').textContent=`${mSet.size} / 6 매치`;
+    if(mSet.size>=6) setTimeout(showMDone,350);
+  } else {
+    const n=document.getElementById('resetNotice');n.style.display='block';
+    [eEl,kEl].forEach(el=>el.classList.add('ng'));
+    setTimeout(()=>{n.style.display='none';renderMatch();},1100);
+  }
+}
+function showMDone(){
+  document.getElementById('mgrid').style.display='none';
+  document.getElementById('mdone').style.display='block';
+  const isLast=(mRound===2);
+  document.getElementById('mdoneMsg').textContent=isLast?'매치게임 완료! 빈칸채우기 도전!':'Round 1 완료! Round 2 도전!';
+  document.getElementById('mnextBtn').textContent=isLast?'빈칸채우기 시작 →':'Round 2 →';
+}
+function matchNext(){
+  if(mRound===1){
+    mRound=2;
+    document.getElementById('mgrid').style.display='grid';
+    document.getElementById('mdone').style.display='none';
+    renderMatch();
+  } else {
+    doUnlock(2);goStep(2);
+  }
+}
+
+// STEP 2: FILL
+function renderBank(){
+  const[lo,hi]=partRange[curPart];
+  if(curWords.length===0) curWords=sh(answers.slice(lo,hi+1));
+  const b=document.getElementById('wordBank');b.innerHTML='';
+  curWords.forEach(w=>{
+    const[lo,hi]=partRange[curPart];
+    const used=filled.slice(lo,hi+1).includes(w);
+    const t=document.createElement('span');
+    t.className='wtag'+(used?' used':'')+(selWord===w?' sel':'');
+    t.textContent=w;
+    t.onclick=()=>{if(used)return;selWord=(selWord===w)?null:w;renderBank();renderStory();};
+    b.appendChild(t);
+  });
+}
+function renderStory(){
+  const s=document.getElementById('story');let html='';
+  partSents[curPart].forEach(si=>{
+    let line=sentences[si].replace(/\[(\d+)\]/g,(_,idx)=>{
+      const i=+idx,val=filled[i]||'';
+      const isCorrect=hasChecked&&val&&val===answers[i];
+      const cls=isCorrect?' ok':(!val&&selWord?' act':'');
+      const click=isCorrect?'':`onclick="fillBlank(${i})"`;
+      const cur=isCorrect?'cursor:default;':'';
+      return `<span class="blank${cls}" data-idx="${i}" ${click} style="${cur}">${val||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span>`;
+    });
+    html+=`<div class="sline2">${line}</div>`;
+  });
+  s.innerHTML=html;
+}
+function fillBlank(idx){
+  if(!selWord)return;
+  if(hasChecked&&filled[idx]===answers[idx])return;
+  filled[idx]=selWord;selWord=null;
+  document.getElementById('scorebox').classList.remove('show');
+  renderBank();renderStory();updateFStatus();
+}
+function updateFStatus(){
+  const[lo,hi]=partRange[curPart];
+  const cnt=filled.slice(lo,hi+1).filter(v=>v!==null).length,tot=hi-lo+1;
+  document.getElementById('fstatus').innerHTML=`채운 빈칸: <strong>${cnt} / ${tot}</strong>`;
+  const all=cnt>=tot;
+  const btn=document.getElementById('checkBtn');
+  btn.disabled=!all;btn.style.opacity=all?'1':'0.5';
+}
+function checkAll(){
+  const[lo,hi]=partRange[curPart];
+  let cor=0,tot=hi-lo+1;
+  document.querySelectorAll('.blank').forEach(b=>{
+    const idx=+b.dataset.idx,val=filled[idx];
+    b.classList.remove('ok','ng');
+    if(!val)return;
+    if(val===answers[idx]){b.classList.add('ok');cor++;}
+    else b.classList.add('ng');
+  });
+  for(let i=lo;i<=hi;i++){
+    if(filled[i]!==null&&filled[i]!==answers[i]) filled[i]=null;
+  }
+  hasChecked=true;
+  const pct=cor/tot;
+  const stars=pct>=.95?'⭐⭐⭐':pct>=.7?'⭐⭐':'⭐';
+  const msgs=['다시 도전! 💪','조금만 더! 🔥','잘 하고 있어요! 👍','거의 완벽해요 ✨','완벽해요! 🎉'];
+  const mi=Math.min(Math.floor(pct*msgs.length),msgs.length-1);
+  document.getElementById('sstars').textContent=stars;
+  document.getElementById('snum').textContent=`${cor} / ${tot}`;
+  document.getElementById('smsg').textContent=msgs[mi];
+  document.getElementById(`ps${curPart}`).textContent=`빈칸 ${cor} / ${tot}`;
+  partScores[curPart]=`${cor}/${tot}`;
+  const nw=document.getElementById('snext');
+  nw.innerHTML='';
+  if(cor===tot){
+    if(curPart===1) nw.innerHTML=`<button class="nextbtn" onclick="switchPart(2)">PART 2 도전 →</button>`;
+    else nw.innerHTML=`<div style="font-size:16px;margin-top:4px">🏆 전체 완료!</div>`;
+    if(!unlocked[3]){doUnlock(3);document.getElementById('unlockBox').classList.add('show');}
+  }
+  setTimeout(()=>{renderBank();renderStory();updateFStatus();},500);
+  document.getElementById('scorebox').classList.add('show');
+  document.getElementById('scorebox').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function resetFill(){
+  const[lo,hi]=partRange[curPart];
+  for(let i=lo;i<=hi;i++)filled[i]=null;
+  selWord=null;curWords=[];hasChecked=false;
+  document.getElementById('scorebox').classList.remove('show');
+  document.getElementById('unlockBox').classList.remove('show');
+  document.getElementById(`ps${curPart}`).textContent='빈칸 — / 12';
+  renderBank();renderStory();updateFStatus();
+}
+
+// STEP 3: STORY LISTEN
+function renderLStory(){
+  const el=document.getElementById('lstory');let html='';
+  partSents[curPart].forEach(si=>{
+    let line=sentences[si].replace(/\[(\d+)\]/g,(_,idx)=>`<span class="hl">${answers[+idx]}</span>`);
+    html+=`<div style="margin-bottom:8px">${line}</div>`;
+  });
+  el.innerHTML=html;
+}
+
+// RESULT
+function toggleResult(){
+  const c=document.getElementById('resCard');
+  const showing=c.classList.contains('show');
+  if(!showing) buildResult();
+  c.classList.toggle('show',!showing);
+  document.getElementById('captureMsg').style.display=!showing?'block':'none';
+  if(!showing) c.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function buildResult(){
+  const name=document.getElementById('nameInput').value||'미입력';
+  const d=new Date();
+  const ds=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('rName').textContent=name;
+  document.getElementById('rDate').textContent=ds;
+  document.getElementById('rP1').textContent=partScores[1]||'—';
+  document.getElementById('rP2').textContent=partScores[2]||'—';
+  let t=0;
+  if(partScores[1])t+=parseInt(partScores[1]);
+  if(partScores[2])t+=parseInt(partScores[2]);
+  document.getElementById('rTotal').textContent=(partScores[1]||partScores[2])?`${t}/24`:'—';
+  const wrongs=[];
+  for(let i=0;i<24;i++)if(filled[i]&&filled[i]!==answers[i])wrongs.push(answers[i]);
+  const wl=document.getElementById('wlist');
+  if(wrongs.length) wl.innerHTML=`<p>⚠️ 틀린 단어</p>`+wrongs.map(w=>`<span class="wi">${w}</span>`).join('');
+  else if(partScores[1]||partScores[2]) wl.innerHTML=`<p style="color:var(--green);font-size:11px;font-weight:700">✅ 틀린 단어 없음! 완벽해요!</p>`;
+  else wl.innerHTML='';
+}
+
+goStep(0);
+</script>
+</body>
+</html>

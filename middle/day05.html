@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>유노이아 그림보카 Day 05</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',sans-serif;background:linear-gradient(135deg,#fce8ff 0%,#e8d5ff 50%,#ffd6f0 100%);min-height:100vh;padding:14px}
+.hdr{background:linear-gradient(135deg,#9b59b6,#d63aa0);color:#fff;text-align:center;padding:14px 16px;border-radius:18px;margin-bottom:14px;box-shadow:0 4px 18px rgba(155,89,182,.35)}
+.hdr-sub{font-size:.75rem;letter-spacing:2px;opacity:.85}
+.hdr-day{font-size:2rem;font-weight:900;line-height:1.1}
+.hdr-title{font-size:.85rem;opacity:.9;margin-top:2px}
+#startScreen{background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.1);margin-bottom:14px}
+#startScreen h2{color:#9b59b6;font-size:1.2rem;margin-bottom:6px}
+#startScreen p{color:#999;font-size:.85rem;margin-bottom:16px}
+#nameInput{width:100%;padding:12px;border:2px solid #ddd;border-radius:12px;font-size:1.1rem;text-align:center;outline:none;font-family:inherit;margin-bottom:14px}
+#nameInput:focus{border-color:#9b59b6}
+.btn-start{background:linear-gradient(135deg,#9b59b6,#d63aa0);color:#fff;border:none;padding:13px 40px;border-radius:24px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.part-sec{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.08);display:none}
+.part-sec.active{display:block}
+.part-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.part-lbl{font-size:1rem;font-weight:800;color:#9b59b6}
+.part-lbl.p2{color:#d63aa0}
+.dots{display:flex;gap:6px}
+.dot{width:30px;height:30px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#bbb;font-weight:700;transition:all .3s}
+.dot.done{background:#9b59b6;color:#fff}
+.dot.cur{background:#d63aa0;color:#fff}
+.stage-box{display:none}.stage-box.active{display:block}
+.stage-ttl{text-align:center;font-size:.9rem;font-weight:700;color:#666;background:linear-gradient(135deg,#f5e8ff,#ffe8f5);border-radius:10px;padding:8px;margin-bottom:12px}
+.word-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.wcard{background:#f7eeff;border:2px solid #dcc8f0;border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;transition:all .2s}
+.wcard.heard{background:linear-gradient(135deg,#9b59b6,#c084e8);border-color:#9b59b6;color:#fff}
+.wcard .sp{font-size:1.1rem}.wcard .en{font-size:.95rem;font-weight:700;margin:3px 0}
+.wcard .ko{font-size:.72rem;color:#999}.wcard.heard .ko{color:rgba(255,255,255,.8)}
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mcol{display:flex;flex-direction:column;gap:8px}
+.mcard{padding:10px 6px;border:2px solid #dcc8f0;border-radius:10px;text-align:center;cursor:pointer;font-size:.82rem;font-weight:600;background:#f7eeff;color:#444;transition:all .2s;min-height:42px;display:flex;align-items:center;justify-content:center;line-height:1.3}
+.mcard.sel{background:#9b59b6;color:#fff;border-color:#9b59b6}
+.mcard.matched{background:#d4edda;border-color:#5cb85c;color:#1a5c2a;cursor:default}
+.mcard.wrong{background:#f8d7da;border-color:#dc3545;color:#721c24}
+.match-msg{text-align:center;font-size:.85rem;color:#888;min-height:20px;margin-bottom:8px}
+.round-ttl{text-align:center;font-size:.85rem;font-weight:700;color:#9b59b6;margin-bottom:10px}
+.sent-block{background:#f7eeff;border-left:3px solid #9b59b6;border-radius:8px;padding:12px;margin-bottom:10px;font-size:.88rem;line-height:2.2;color:#333}
+.blank{display:inline-block;min-width:90px;border-bottom:2.5px solid #bbb;padding:0 6px 3px;margin:0 3px;text-align:center;cursor:pointer;font-weight:700;vertical-align:bottom;transition:all .2s;color:#9b59b6;font-size:.88rem}
+.blank.empty{color:transparent;border-bottom-color:#bbb}
+.blank.sel{background:#f0e0ff;border-bottom:2.5px solid #9b59b6;color:#9b59b6}
+.blank.ok{background:#eafaf1;color:#1a5c2a;border-bottom:2.5px solid #5cb85c;cursor:default}
+.blank.err{background:#fdf0f0;color:#dc3545;border-bottom:2.5px solid #dc3545}
+.wbank{display:flex;flex-wrap:wrap;gap:7px;padding:12px;background:#f5f5f5;border-radius:10px;margin:10px 0}
+.bword{background:#fff;border:1.5px solid #dcc8f0;border-radius:16px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer;color:#9b59b6;transition:all .2s;font-family:inherit}
+.bword.sel-bank{background:#9b59b6;color:#fff;border-color:#9b59b6}
+.bword.used{opacity:.28;pointer-events:none}
+.listen-btn{display:inline-flex;align-items:center;gap:6px;background:#f7eeff;border:1px solid #dcc8f0;border-radius:20px;padding:7px 14px;font-size:.82rem;color:#9b59b6;cursor:pointer;font-family:inherit;margin-bottom:10px}
+.score-btn{width:100%;background:linear-gradient(135deg,#d63aa0,#9b59b6);color:#fff;border:none;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+.score-btn:disabled{opacity:.5;cursor:default}
+.score-msg{text-align:center;font-size:.83rem;min-height:20px;margin-top:6px;font-weight:600}
+.story-full{font-size:.88rem;line-height:2;color:#333;margin-bottom:14px}
+.story-full p{margin-bottom:8px}
+.hl{background:#f0e0ff;border-radius:4px;padding:1px 3px}
+.speed-row{display:flex;gap:7px;margin-bottom:12px}
+.spd-btn{flex:1;padding:8px 4px;border:2px solid #dcc8f0;border-radius:10px;background:#fff;font-size:.78rem;cursor:pointer;font-family:inherit;color:#888;transition:all .2s}
+.spd-btn.on{background:#9b59b6;color:#fff;border-color:#9b59b6}
+.play-btn{width:100%;background:linear-gradient(135deg,#9b59b6,#d63aa0);color:#fff;border:none;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit}
+.nxt-btn{width:100%;background:linear-gradient(135deg,#9b59b6,#d63aa0);color:#fff;border:none;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px;display:none}
+.nxt-btn.show{display:block}
+#resultCard{background:#fff;border-radius:18px;padding:22px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.1);display:none;text-align:center}
+#resultCard.show{display:block}
+.res-hdr{background:linear-gradient(135deg,#9b59b6,#d63aa0);color:#fff;padding:16px;border-radius:14px;margin-bottom:14px}
+.res-hdr h2{font-size:1.3rem;font-weight:900}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.res-item{background:#f7eeff;border-radius:12px;padding:12px}
+.res-lbl{font-size:.72rem;color:#999;margin-bottom:2px}
+.res-val{font-size:1.4rem;font-weight:900;color:#9b59b6}
+.res-total{background:linear-gradient(135deg,#f5e8ff,#ffe8f5);border:2px solid #dcc8f0;border-radius:14px;padding:16px;margin-bottom:10px}
+.res-total .lbl{font-size:.82rem;color:#888}
+.res-total .val{font-size:2.4rem;font-weight:900;color:#d63aa0}
+.res-total .grade{font-size:.85rem;color:#666;margin-top:2px}
+.res-wrong{font-size:.83rem;color:#555;text-align:left;margin-bottom:12px;padding:10px;background:#fff9ff;border-radius:10px;border:1px solid #eee}
+.capture{background:#ffe8f5;border-radius:12px;padding:12px;font-size:.9rem;font-weight:700;color:#d63aa0}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-sub">유노이아 중등 그림보카</div>
+  <div class="hdr-day">DAY 05</div>
+  <div class="hdr-title">A Journey Worth Sharing</div>
+</div>
+<div id="startScreen">
+  <h2>안녕하세요! 👋</h2>
+  <p>이름을 입력하고 학습을 시작해요</p>
+  <input type="text" id="nameInput" placeholder="이름 입력" /><br>
+  <button class="btn-start" onclick="startGame()">시작하기 🚀</button>
+</div>
+<div class="part-sec" id="sec1">
+  <div class="part-hdr"><span class="part-lbl">✏️ PART 1</span>
+    <div class="dots"><div class="dot cur" id="d1_1">👂</div><div class="dot" id="d1_2">🎮</div><div class="dot" id="d1_3">✏️</div><div class="dot" id="d1_4">🔊</div></div>
+  </div>
+  <div class="stage-box active" id="s1_1"><div class="stage-ttl">👂 단어 듣기 — 모든 단어를 눌러보세요!</div><div class="word-grid" id="wg1"></div><button class="nxt-btn" id="n1_1" onclick="goStage(1,2)">매치게임 시작 🎮</button></div>
+  <div class="stage-box" id="s1_2"><div class="stage-ttl">🎮 매치 게임</div><div class="round-ttl" id="rt1">Round 1 / 2</div><div class="match-wrap"><div class="mcol" id="encol1"></div><div class="mcol" id="kocol1"></div></div><div class="match-msg" id="mm1"></div></div>
+  <div class="stage-box" id="s1_3"><div class="stage-ttl">✏️ 빈칸 채우기</div><button class="listen-btn" onclick="listenStory(1)">🔊 스토리 듣기</button><div id="sa1"></div><div style="font-size:.78rem;color:#aaa;margin:4px 0 2px">단어 선택 → 빈칸 클릭으로 채워요</div><div class="wbank" id="wb1"></div><button class="score-btn" id="sb1" onclick="checkAnswers(1)">✅ 채점하기</button><div class="score-msg" id="sm1"></div><button class="nxt-btn" id="n1_3" onclick="goStage(1,4)">스토리 듣기 🔊</button></div>
+  <div class="stage-box" id="s1_4"><div class="stage-ttl">🔊 스토리 듣기</div><div class="speed-row"><button class="spd-btn on" id="sp1_slow" onclick="setSpd(1,'slow')">🐢 느리게</button><button class="spd-btn" id="sp1_norm" onclick="setSpd(1,'norm')">🚶 보통</button><button class="spd-btn" id="sp1_fast" onclick="setSpd(1,'fast')">🚀 빠르게</button></div><div class="story-full" id="sf1"></div><button class="play-btn" id="pb1" onclick="playStory(1)">▶ 재생</button><button class="nxt-btn show" style="margin-top:12px" onclick="startPart(2)">PART 2 시작 ➡️</button></div>
+</div>
+<div class="part-sec" id="sec2">
+  <div class="part-hdr"><span class="part-lbl p2">✦ PART 2</span>
+    <div class="dots"><div class="dot cur" id="d2_1">👂</div><div class="dot" id="d2_2">🎮</div><div class="dot" id="d2_3">✏️</div><div class="dot" id="d2_4">🔊</div></div>
+  </div>
+  <div class="stage-box active" id="s2_1"><div class="stage-ttl">👂 단어 듣기 — 모든 단어를 눌러보세요!</div><div class="word-grid" id="wg2"></div><button class="nxt-btn" id="n2_1" onclick="goStage(2,2)">매치게임 시작 🎮</button></div>
+  <div class="stage-box" id="s2_2"><div class="stage-ttl">🎮 매치 게임</div><div class="round-ttl" id="rt2">Round 1 / 2</div><div class="match-wrap"><div class="mcol" id="encol2"></div><div class="mcol" id="kocol2"></div></div><div class="match-msg" id="mm2"></div></div>
+  <div class="stage-box" id="s2_3"><div class="stage-ttl">✏️ 빈칸 채우기</div><button class="listen-btn" onclick="listenStory(2)">🔊 스토리 듣기</button><div id="sa2"></div><div style="font-size:.78rem;color:#aaa;margin:4px 0 2px">단어 선택 → 빈칸 클릭으로 채워요</div><div class="wbank" id="wb2"></div><button class="score-btn" id="sb2" onclick="checkAnswers(2)">✅ 채점하기</button><div class="score-msg" id="sm2"></div><button class="nxt-btn" id="n2_3" onclick="goStage(2,4)">스토리 듣기 🔊</button></div>
+  <div class="stage-box" id="s2_4"><div class="stage-ttl">🔊 스토리 듣기</div><div class="speed-row"><button class="spd-btn on" id="sp2_slow" onclick="setSpd(2,'slow')">🐢 느리게</button><button class="spd-btn" id="sp2_norm" onclick="setSpd(2,'norm')">🚶 보통</button><button class="spd-btn" id="sp2_fast" onclick="setSpd(2,'fast')">🚀 빠르게</button></div><div class="story-full" id="sf2"></div><button class="play-btn" id="pb2" onclick="playStory(2)">▶ 재생</button><button class="nxt-btn show" style="margin-top:12px" onclick="showResult()">결과 보기 🏆</button></div>
+</div>
+<div id="resultCard">
+  <div class="res-hdr"><h2>🎉 학습 완료!</h2><p id="rName"></p><p id="rDate" style="font-size:.8rem;opacity:.8"></p></div>
+  <div class="res-grid"><div class="res-item"><div class="res-lbl">PART 1</div><div class="res-val" id="rP1">—</div></div><div class="res-item"><div class="res-lbl">PART 2</div><div class="res-val" id="rP2">—</div></div></div>
+  <div class="res-total"><div class="lbl">TOTAL</div><div class="val" id="rTotal">—</div><div class="grade" id="rGrade"></div></div>
+  <div class="res-wrong" id="rWrong"></div>
+  <div class="capture">📲 캡처해서 선생님께 보내세요!</div>
+</div>
+<script>
+const PARTS={1:{words:[{en:'outcome',ko:'결과, 결론'},{en:'transparent',ko:'투명한; 솔직한'},{en:'indoor',ko:'실내의'},{en:'endangered',ko:'멸종 위기에 처한'},{en:'involve',ko:'관여하다, 참여시키다'},{en:'engage',ko:'관여하다'},{en:'insight',ko:'통찰(력), 식견'},{en:'transfer',ko:'환승, 이동'},{en:'utter',ko:'말하다, 소리를 내다'},{en:'outline',ko:'윤곽'},{en:'outstanding',ko:'눈에 띄는, 우수한'}],sents:[{tpl:'The {outcome} of their trip was amazing \u2014 they found a {transparent} lake away from {indoor} crowds, home to {endangered} birds.',ans:['outcome','transparent','indoor','endangered'],full:'The outcome of their trip was amazing \u2014 they found a transparent lake away from indoor crowds, home to endangered birds.'},{tpl:'They wanted to {involve} local guides and {engage} in sharing {insight}, so they had to {transfer} to a small boat.',ans:['involve','engage','insight','transfer'],full:'They wanted to involve local guides and engage in sharing insight, so they had to transfer to a small boat.'},{tpl:'\uaddc\ubbfc began to {utter} the {outline} of his {outstanding} idea with a big smile.',ans:['utter','outline','outstanding'],full:'\uaddc\ubbfc began to utter the outline of his outstanding idea with a big smile.'}]},2:{words:[{en:'invest',ko:'투자하다'},{en:'enlarge',ko:'확장하다'},{en:'outlet',ko:'직판장, 할인 매장'},{en:'inner',ko:'안쪽의, 내면의'},{en:'translate',ko:'번역하다'},{en:'transform',ko:'변형시키다'},{en:'income',ko:'수입, 소득'},{en:'output',ko:'생산(량); 출력'},{en:'infect',ko:'전염시키다'},{en:'entitle',ko:'자격/권리를 주다'},{en:'transport',ko:'수송하다; 수송'}],sents:[{tpl:'\uc2f9\ucca0 decided to {invest} his savings and {enlarge} their travel blog by selling photos at a local {outlet}.',ans:['invest','enlarge','outlet'],full:'\uc2f9\ucca0 decided to invest his savings and enlarge their travel blog by selling photos at a local outlet.'},{tpl:'His {inner} drive helped him {translate} local stories and {transform} their modest {income} into a successful project, and the {output} of their hard work inspired thousands.',ans:['inner','translate','transform','income','output'],full:'His inner drive helped him translate local stories and transform their modest income into a successful project, and the output of their hard work inspired thousands.'},{tpl:'Their adventure began to {infect} others with wonder, and going viral would {entitle} them to {transport} their story to the world stage.',ans:['infect','entitle','transport'],full:'Their adventure began to infect others with wonder, and going viral would entitle them to transport their story to the world stage.'}]}};
+const NUMS=['\u2460','\u2461','\u2462','\u2463','\u2464','\u2465'];
+let playerName='';
+const ST={1:{stage:1,heard:new Set(),spd:.64,pending:null,filled:{},correct:{},scored:false,score:0,wrongs:[]},2:{stage:1,heard:new Set(),spd:.64,pending:null,filled:{},correct:{},scored:false,score:0,wrongs:[]}};
+function startGame(){const n=document.getElementById('nameInput').value.trim();if(!n){alert('이름을 입력해주세요!');return;}playerName=n;document.getElementById('startScreen').style.display='none';startPart(1);}
+function startPart(p){const sec=document.getElementById('sec'+p);sec.classList.add('active');buildWordGrid(p);buildFillBlanks(p);buildFullStory(p);initMatch(p,1);sec.scrollIntoView({behavior:'smooth',block:'start'});}
+function goStage(p,to){const from=ST[p].stage;document.getElementById('s'+p+'_'+from).classList.remove('active');document.getElementById('d'+p+'_'+from).className='dot done';document.getElementById('d'+p+'_'+to).className='dot cur';ST[p].stage=to;document.getElementById('s'+p+'_'+to).classList.add('active');}
+function buildWordGrid(p){const grid=document.getElementById('wg'+p);grid.innerHTML='';PARTS[p].words.forEach((w,i)=>{const c=document.createElement('div');c.className='wcard';c.innerHTML=`<div class="sp">\uD83D\uDD0A</div><div class="en">${w.en}</div><div class="ko">${w.ko}</div>`;c.onclick=()=>{tts(w.en,ST[p].spd);c.classList.add('heard');ST[p].heard.add(i);if(ST[p].heard.size===PARTS[p].words.length)document.getElementById('n'+p+'_1').classList.add('show');};grid.appendChild(c);});}
+let MS={1:{},2:{}};
+function initMatch(p,round){const words=PARTS[p].words;const pairs=round===1?words.slice(0,6):words.slice(6);MS[p]={pairs,round,selEn:null,selKo:null,matched:new Set()};document.getElementById('rt'+p).textContent='Round '+round+' / 2';document.getElementById('mm'+p).textContent='';const enList=pairs.map((w,i)=>({...w,idx:i}));const koList=shuffle(pairs.map((w,i)=>({...w,idx:i})));const ec=document.getElementById('encol'+p),kc=document.getElementById('kocol'+p);ec.innerHTML='';kc.innerHTML='';enList.forEach((item,i)=>{ec.appendChild(mkMCard(p,item.idx,item.en,'en'));kc.appendChild(mkMCard(p,koList[i].idx,koList[i].ko,'ko'));});}
+function mkMCard(p,idx,text,side){const c=document.createElement('div');c.className='mcard';c.dataset.idx=idx;c.textContent=text;c.onclick=()=>pickMatch(p,c,side);return c;}
+function pickMatch(p,card,side){const ms=MS[p];if(card.classList.contains('matched'))return;if(side==='en'&&ms.selEn)ms.selEn.classList.remove('sel');if(side==='ko'&&ms.selKo)ms.selKo.classList.remove('sel');if(side==='en')ms.selEn=card;else ms.selKo=card;card.classList.add('sel');if(ms.selEn&&ms.selKo){const ei=+ms.selEn.dataset.idx,ki=+ms.selKo.dataset.idx;if(ei===ki){[ms.selEn,ms.selKo].forEach(c=>{c.classList.remove('sel');c.classList.add('matched');});tts(ms.pairs[ei].en,ST[p].spd);ms.matched.add(ei);ms.selEn=ms.selKo=null;if(ms.matched.size===ms.pairs.length){document.getElementById('mm'+p).textContent=ms.round===1?'\uD83C\uDF89 Round 1 \uC644\uB8CC!':'\uD83C\uDFC6 \uB9E4\uCE58\uAC8C\uC784 \uC644\uB8CC!';setTimeout(()=>ms.round===1?initMatch(p,2):goStage(p,3),750);}}else{[ms.selEn,ms.selKo].forEach(c=>{c.classList.remove('sel');c.classList.add('wrong');});document.getElementById('mm'+p).textContent='\u274C \uD2C0\uB838\uC5B4\uC694! \uB77C\uC6B4\uB4DC\uB97C \uB2E4\uC2DC \uC2DC\uC791\uD569\uB2C8\uB2E4...';setTimeout(()=>initMatch(p,ms.round),900);}}}
+function buildFillBlanks(p){const area=document.getElementById('sa'+p);area.innerHTML='';ST[p].filled={};ST[p].correct={};ST[p].pending=null;PARTS[p].sents.forEach((s,si)=>{const div=document.createElement('div');div.className='sent-block';div.innerHTML=NUMS[p===1?si:si+3]+' '+renderTpl(p,si,s);area.appendChild(div);});buildWordBank(p);}
+function renderTpl(p,si,s){let bi=0;return s.tpl.replace(/\{(\w+)\}/g,(_,w)=>{const id=`b${p}_${si}_${bi++}`;if(ST[p].correct[id])return`<span class="blank ok" id="${id}">${w}</span>`;const filled=ST[p].filled[id]||'';return`<span class="blank${filled?'':' empty'}" id="${id}" onclick="clickBlank('${id}',${p})">${filled||'\u2009\u2009\u2009\u2009\u2009\u2009\u2009\u2009\u2009'}</span>`;});}
+function refreshSents(p){PARTS[p].sents.forEach((s,si)=>{document.getElementById('sa'+p).children[si].innerHTML=NUMS[p===1?si:si+3]+' '+renderTpl(p,si,s);});}
+function buildWordBank(p){const bank=document.getElementById('wb'+p);bank.innerHTML='';PARTS[p].words.forEach(w=>{const b=document.createElement('button');b.className='bword';b.id='bw'+p+'_'+w.en;b.textContent=w.en;b.onclick=()=>clickBankWord(p,w.en);bank.appendChild(b);});}
+function clickBankWord(p,word){ST[p].pending=word;document.querySelectorAll('#wb'+p+' .bword').forEach(b=>b.classList.remove('sel-bank'));const btn=document.getElementById('bw'+p+'_'+word);if(btn&&!btn.classList.contains('used'))btn.classList.add('sel-bank');}
+function clickBlank(id,p){if(ST[p].correct[id])return;if(ST[p].pending){const word=ST[p].pending;if(ST[p].filled[id])setUsed(p,ST[p].filled[id],false);ST[p].filled[id]=word;setUsed(p,word,true);ST[p].pending=null;document.querySelectorAll('#wb'+p+' .bword').forEach(b=>b.classList.remove('sel-bank'));refreshSents(p);}}
+function setUsed(p,word,used){const btn=document.getElementById('bw'+p+'_'+word);if(btn){used?btn.classList.add('used'):btn.classList.remove('used');}}
+function checkAnswers(p){ST[p].pending=null;document.querySelectorAll('#wb'+p+' .bword').forEach(b=>b.classList.remove('sel-bank'));let allFilled=true;PARTS[p].sents.forEach((s,si)=>{s.ans.forEach((_,bi)=>{const id=`b${p}_${si}_${bi}`;if(!ST[p].correct[id]&&!ST[p].filled[id])allFilled=false;});});if(!allFilled){document.getElementById('sm'+p).innerHTML='<span style="color:#d63aa0">\u26A0\uFE0F \uBAA8\uB4E0 \uBE48\uCE78\uC744 \uCC44\uC6CC\uC8FC\uC138\uC694!</span>';return;}let wrongWords=[],correctNow=0;PARTS[p].sents.forEach((s,si)=>{s.ans.forEach((ans,bi)=>{const id=`b${p}_${si}_${bi}`;if(ST[p].correct[id]){correctNow++;return;}if(ST[p].filled[id]===ans){ST[p].correct[id]=true;correctNow++;}else{wrongWords.push(ST[p].filled[id]);setUsed(p,ST[p].filled[id],false);delete ST[p].filled[id];}});});if(!ST[p].scored){ST[p].score=correctNow;ST[p].wrongs=wrongWords;ST[p].scored=true;}refreshSents(p);const total=PARTS[p].words.length;const allDone=PARTS[p].sents.every((s,si)=>s.ans.every((_,bi)=>ST[p].correct[`b${p}_${si}_${bi}`]));const sm=document.getElementById('sm'+p);if(allDone){sm.innerHTML=`<span style="color:#1a5c2a">\uD83C\uDF89 \uBAA8\uB450 \uC815\uB2F5! (${total}/${total})</span>`;document.getElementById('n'+p+'_3').classList.add('show');document.getElementById('sb'+p).disabled=true;}else{sm.innerHTML=`<span style="color:#d63aa0">\u274C ${wrongWords.length}\uAC1C \uD2C0\uB838\uC5B4\uC694! \uB2E4\uC2DC \uCC44\uC6CC\uC8FC\uC138\uC694.</span>`;}}
+function listenStory(p){tts(PARTS[p].sents.map(s=>s.full).join(' '),ST[p].spd);}
+function buildFullStory(p){const el=document.getElementById('sf'+p);const allW=PARTS[p].words.map(w=>w.en);let html='';PARTS[p].sents.forEach((s,i)=>{let txt=s.full;allW.forEach(w=>{txt=txt.replace(new RegExp('\\b'+escRe(w)+'\\b','gi'),m=>`<span class="hl">${m}</span>`);});html+=`<p>${NUMS[p===1?i:i+3]} ${txt}</p>`;});el.innerHTML=html;}
+function setSpd(p,key){const map={slow:.64,norm:.85,fast:1.1};ST[p].spd=map[key];['slow','norm','fast'].forEach(k=>document.getElementById(`sp${p}_${k}`).classList.toggle('on',k===key));}
+function playStory(p){cancelTTS();const txt=PARTS[p].sents.map(s=>s.full).join(' ');const btn=document.getElementById('pb'+p);btn.textContent='\u23F8 \uC77C\uC2DC\uC815\uC9C0';btn.onclick=()=>pauseStory(p);tts(txt,ST[p].spd,()=>{btn.textContent='\u25B6 \uC7AC\uC0DD';btn.onclick=()=>playStory(p);});}
+function pauseStory(p){speechSynthesis.pause();const btn=document.getElementById('pb'+p);btn.textContent='\u25B6 \uACC4\uC18D';btn.onclick=()=>{speechSynthesis.resume();btn.textContent='\u23F8 \uC77C\uC2DC\uC815\uC9C0';btn.onclick=()=>pauseStory(p);};}
+function showResult(){cancelTTS();const p1=ST[1].score,p2=ST[2].score,tot=p1+p2;const card=document.getElementById('resultCard');card.classList.add('show');document.getElementById('rName').textContent='\uD83D\uDC64 '+playerName;const d=new Date();document.getElementById('rDate').textContent=d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();document.getElementById('rP1').textContent=p1+'/11';document.getElementById('rP2').textContent=p2+'/11';document.getElementById('rTotal').textContent=tot+'/22';document.getElementById('rGrade').textContent=tot>=20?'\u2B50\u2B50\u2B50 \uC644\uBCBD\uD574\uC694!':tot>=16?'\u2B50\u2B50 \uC798\uD588\uC5B4\uC694!':'\u2B50 \uB2E4\uC2DC \uB3C4\uC804\uD574\uBD10\uC694!';const wr=[...new Set([...ST[1].wrongs,...ST[2].wrongs])].filter(w=>w);document.getElementById('rWrong').innerHTML=wr.length?'\u274C \uD2C0\uB9B0 \uB2E8\uC5B4: <strong>'+wr.join(', ')+'</strong>':'\u2705 \uBAA8\uB4E0 \uB2E8\uC5B4 \uC815\uB2F5!';card.scrollIntoView({behavior:'smooth',block:'start'});}
+function tts(text,rate=.64,onEnd=null){cancelTTS();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=rate;if(onEnd)u.onend=onEnd;speechSynthesis.speak(u);}
+function cancelTTS(){speechSynthesis.cancel();}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function escRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+</script>
+</body>
+</html>
